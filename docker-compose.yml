@@ -1,0 +1,50 @@
+version: "3.9"
+
+services:
+  shqaff:
+    build: .
+    container_name: shqaff-app
+    environment:
+      SHAQAFF_DB_HOST: db
+      SHAQAFF_DB_PORT: 5432
+      SHAQAFF_DB_NAME: shqaff
+      SHAQAFF_DB_USER: postgres
+      SHAQAFF_DB_PASS: postgres
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: python main.py
+
+  test:
+    build: .
+    container_name: shqaff-test
+    environment:
+      SHAQAFF_DB_HOST: db
+      SHAQAFF_DB_PORT: 5432
+      SHAQAFF_DB_NAME: shqaff
+      SHAQAFF_DB_USER: postgres
+      SHAQAFF_DB_PASS: postgres
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: ["pytest", "tests/"]
+
+  db:
+    image: postgres:15
+    container_name: shqaff-db
+    restart: always
+    environment:
+      POSTGRES_DB: shqaff
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

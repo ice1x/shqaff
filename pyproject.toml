@@ -1,0 +1,24 @@
+[project]
+name = "shqaff"
+version = "0.0.1"
+description = "A lightweight, PostgreSQL-backed task queue for Python"
+authors = [
+    { name="ilia iakhin" }
+]
+license = { file = "LICENSE" }
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "SQLAlchemy>=2.0",
+    "psycopg2-binary>=2.9",
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["."]

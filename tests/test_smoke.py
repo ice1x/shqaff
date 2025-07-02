@@ -1,17 +1,5 @@
-import pytest
-from sqlalchemy.orm import Session
-
-from shqaff.db import init_db, SessionLocal
 from shqaff.models import TaskQueue
 from shqaff.producer import create_task
-
-
-@pytest.fixture(scope="module")
-def db() -> Session:
-    init_db()
-    db = SessionLocal()
-    yield db
-    db.close()
 
 
 def test_create_task(db):

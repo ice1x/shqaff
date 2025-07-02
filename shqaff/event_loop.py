@@ -1,50 +1,52 @@
 import time
 from datetime import datetime
-from sqlalchemy.orm import Session
-from sqlalchemy import select, update
-from .models import TaskQueue
-from .registry import consumer_registry
+
+from shqaff.models import TaskQueue
+from shqaff.registry import consumer_registry
+from shqaff.task import Task
 
 
-def process_tasks(db: Session, poll_interval: int = 5, batch_size: int = 10) -> None:
-    while True:
-        stmt = (
-            select(TaskQueue)
-            .where(TaskQueue.status == "pending")
-            .limit(batch_size)
-            .with_for_update(skip_locked=True)
-        )
+def process_once(db, batch_size: int = 10):
+    tasks = (
+        db.query(TaskQueue)
+        .filter(TaskQueue.status == "pending")
+        .limit(batch_size)
+        .with_for_update(skip_locked=True)
+        .all()
+    )
 
-        tasks = db.execute(stmt).scalars().all()
+    for task_model in tasks:
+        consumer_cls = consumer_registry.get(task_model.consumer)
+        if not consumer_cls:
+            continue
 
-        for task in tasks:
-            consumer_cls = consumer_registry.get(task.consumer)
+        task = Task(task_model)
 
-            if not consumer_cls:
-                continue
+        try:
+            task.start()
+            task_model.last_attempt_at = datetime.utcnow()
+            db.commit()
 
             consumer = consumer_cls()
+            consumer.run(task_model.payload)
 
-            try:
-                task.status = "in_progress"
-                task.last_attempt_at = datetime.utcnow()
-                db.commit()
+            task.succeed()
 
-                consumer.run(task.payload)
+        except Exception as e:
+            task_model.retries += 1
+            task_model.error = str(e)
 
-                task.status = "done"
+            if task_model.retries >= task_model.max_retries:
+                task.fail()
+            else:
+                task_model.status = "pending"
 
-            except Exception as e:
-                task.retries += 1
-                task.error = str(e)
+        finally:
+            task_model.updated_at = datetime.utcnow()
+            db.commit()
 
-                if task.retries >= task.max_retries:
-                    task.status = "failed"
-                else:
-                    task.status = "pending"
 
-            finally:
-                task.updated_at = datetime.utcnow()
-                db.commit()
-
+def process_tasks(db, poll_interval: int = 5, batch_size: int = 10):
+    while True:
+        process_once(db, batch_size=batch_size)
         time.sleep(poll_interval)

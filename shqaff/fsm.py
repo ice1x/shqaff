@@ -1,12 +1,14 @@
 from transitions import Machine
 
+from .status import TaskStatus
+
 
 class TaskStateMachine:
 
-    states = ["pending", "in_progress", "done", "failed"]
+    states = [status.value for status in TaskStatus]
 
-    def __init__(self, initial: str = "pending"):
-        self.state = initial
+    def __init__(self, initial: TaskStatus | str = TaskStatus.PENDING):
+        self.state = initial.value if isinstance(initial, TaskStatus) else initial
 
         self.machine = Machine(
             model=self,
@@ -14,9 +16,9 @@ class TaskStateMachine:
             initial=self.state,
         )
 
-        self.machine.add_transition("start", source="pending", dest="in_progress")
-        self.machine.add_transition("succeed", source="in_progress", dest="done")
-        self.machine.add_transition("fail", source="in_progress", dest="failed")
+        self.machine.add_transition("start", source=TaskStatus.PENDING.value, dest=TaskStatus.IN_PROGRESS.value)
+        self.machine.add_transition("succeed", source=TaskStatus.IN_PROGRESS.value, dest=TaskStatus.DONE.value)
+        self.machine.add_transition("fail", source=TaskStatus.IN_PROGRESS.value, dest=TaskStatus.FAILED.value)
 
-    def get_state(self) -> str:
-        return self.state
+    def get_state(self) -> TaskStatus:
+        return TaskStatus(self.state)

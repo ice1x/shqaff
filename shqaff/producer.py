@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from .models import TaskQueue
+from .status import TaskStatus
 
 
 def create_task(
@@ -10,7 +11,7 @@ def create_task(
         consumer=consumer,
         payload=payload,
         max_retries=max_retries,
-        status="pending",
+        status=TaskStatus.PENDING.value,
     )
     db.add(task)
     db.commit()

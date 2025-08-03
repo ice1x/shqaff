@@ -1,5 +1,6 @@
 from shqaff.models import TaskQueue
 from shqaff.producer import create_task
+from shqaff.status import TaskStatus
 
 
 def test_create_task(db):
@@ -19,5 +20,5 @@ def test_create_task(db):
 
     assert task is not None
     assert task.payload["foo"] == "bar"
-    assert task.status == "pending"
+    assert task.status == TaskStatus.PENDING.value
     assert task.max_retries == 2

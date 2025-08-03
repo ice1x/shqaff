@@ -1,7 +1,16 @@
+from dataclasses import asdict, dataclass
+
 from shqaff.db import init_db, SessionLocal
 from shqaff.event_loop import process_tasks
 from shqaff.registry import register_consumer
 from shqaff.consumer import Consumer
+from shqaff.producer import create_task
+
+
+@dataclass
+class DemoPayload:
+    message: str
+    number: int
 
 
 class DemoConsumer(Consumer):
@@ -11,10 +20,18 @@ class DemoConsumer(Consumer):
         return "demo_task"
 
     def run(self, payload: dict) -> None:
-        print("DemoConsumer received:", payload)
+        data = DemoPayload(**payload)
+        print("DemoConsumer received:", data)
 
 
 if __name__ == "__main__":
     init_db()
     register_consumer(DemoConsumer)
-    process_tasks(db=SessionLocal(), poll_interval=2)
+    db = SessionLocal()
+    create_task(
+        db,
+        task_name="demo",
+        consumer="demo_task",
+        payload=asdict(DemoPayload("hello", 1)),
+    )
+    process_tasks(db=db, poll_interval=2)

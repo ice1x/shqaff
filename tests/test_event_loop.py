@@ -3,6 +3,7 @@ from shqaff.registry import register_consumer
 from shqaff.event_loop import process_once
 from shqaff.consumer import Consumer
 from shqaff.producer import create_task
+from shqaff.status import TaskStatus
 
 
 class DummyConsumer(Consumer):
@@ -27,7 +28,7 @@ def test_event_loop_processes_task(db):
     process_once(db=db, batch_size=1)
 
     task = db.query(TaskQueue).filter_by(consumer="dummy").first()
-    assert task.status == "done"
+    assert task.status == TaskStatus.DONE.value
     assert task.error is None
     assert task.retries == 0
     assert DummyConsumer.processed[-1] == {"hello": "world"}

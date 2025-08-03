@@ -4,12 +4,13 @@ from datetime import datetime
 from shqaff.models import TaskQueue
 from shqaff.registry import consumer_registry
 from shqaff.task import Task
+from shqaff.status import TaskStatus
 
 
 def process_once(db, batch_size: int = 10):
     tasks = (
         db.query(TaskQueue)
-        .filter(TaskQueue.status == "pending")
+        .filter(TaskQueue.status == TaskStatus.PENDING.value)
         .limit(batch_size)
         .with_for_update(skip_locked=True)
         .all()
@@ -39,7 +40,7 @@ def process_once(db, batch_size: int = 10):
             if task_model.retries >= task_model.max_retries:
                 task.fail()
             else:
-                task_model.status = "pending"
+                task_model.status = TaskStatus.PENDING.value
 
         finally:
             task_model.updated_at = datetime.utcnow()

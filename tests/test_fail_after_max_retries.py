@@ -3,6 +3,7 @@ from shqaff.registry import register_consumer
 from shqaff.producer import create_task
 from shqaff.event_loop import process_once
 from shqaff.models import TaskQueue
+from shqaff.status import TaskStatus
 
 
 class AlwaysFailingConsumer(Consumer):
@@ -26,6 +27,6 @@ def test_task_fails_permanently_after_max_retries(db):
     process_once(db)
 
     task = db.query(TaskQueue).first()
-    assert task.status == "failed"
+    assert task.status == TaskStatus.FAILED.value
     assert task.retries == 1
     assert "crash" in task.error

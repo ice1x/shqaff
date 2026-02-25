@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from .models import TaskQueue
-from .status import TaskStatus
+from shqaff.models import TaskQueue
+from shqaff.status import TaskStatus
 
 
 def create_task(

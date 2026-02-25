@@ -1,8 +1,8 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 
-from .config import DATABASE_URL
-from .models import Base
+from shqaff.config import DATABASE_URL
+from shqaff.models import Base
 
 
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)

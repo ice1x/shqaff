@@ -1,5 +1,5 @@
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 
 from shqaff.models import TaskQueue
 from shqaff.registry import consumer_registry
@@ -25,7 +25,7 @@ def process_once(db, batch_size: int = 10):
 
         try:
             task.start()
-            task_model.last_attempt_at = datetime.utcnow()
+            task_model.last_attempt_at = datetime.now(timezone.utc)
             db.commit()
 
             consumer = consumer_cls()
@@ -43,7 +43,7 @@ def process_once(db, batch_size: int = 10):
                 task_model.status = TaskStatus.PENDING.value
 
         finally:
-            task_model.updated_at = datetime.utcnow()
+            task_model.updated_at = datetime.now(timezone.utc)
             db.commit()
 
 

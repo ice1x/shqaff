@@ -1,6 +1,6 @@
 from transitions import Machine
 
-from .status import TaskStatus
+from shqaff.status import TaskStatus
 
 
 class TaskStateMachine:

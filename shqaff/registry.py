@@ -1,5 +1,5 @@
 from typing import Dict, Type
-from .consumer import Consumer
+from shqaff.consumer import Consumer
 
 
 consumer_registry: Dict[str, Type[Consumer]] = {}

@@ -3,22 +3,49 @@ name = "shqaff"
 version = "0.0.1"
 description = "A lightweight, PostgreSQL-backed task queue for Python"
 authors = [
-    { name="ilia iakhin" }
+    { name = "ilia iakhin" }
 ]
-license = { file = "LICENSE" }
+license = {text = "MIT"}
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
+keywords = ["task-queue", "postgresql", "sqlalchemy", "background-jobs", "fsm"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Distributed Computing",
+    "Typing :: Typed",
+]
 dependencies = [
     "SQLAlchemy>=2.0",
     "psycopg2-binary>=2.9",
+    "transitions>=0.9",
+]
+
+[project.urls]
+Homepage = "https://github.com/ice1x/shqaff"
+Repository = "https://github.com/ice1x/shqaff"
+Issues = "https://github.com/ice1x/shqaff/issues"
+
+[project.optional-dependencies]
+dev = [
+    "black",
+    "flake8",
+    "pytest",
+    "mypy",
+    "build",
+    "twine",
 ]
 
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools]
-package-dir = {"" = "src"}
-
 [tool.setuptools.packages.find]
-where = ["."]
+include = ["shqaff*"]

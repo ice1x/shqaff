@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 
-from .models import TaskQueue
-from .fsm import TaskStateMachine
+from shqaff.models import TaskQueue
+from shqaff.fsm import TaskStateMachine
 
 
 @dataclass

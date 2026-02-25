@@ -1,10 +1,10 @@
 import time
 from datetime import datetime, timezone
 
-from .models import TaskQueue
-from .registry import consumer_registry
-from .task import Task
-from .status import TaskStatus
+from shqaff.models import TaskQueue
+from shqaff.registry import consumer_registry
+from shqaff.task import Task
+from shqaff.status import TaskStatus
 
 
 def process_once(db, batch_size: int = 10):

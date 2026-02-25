@@ -42,7 +42,8 @@ docker run -d --name shqaff-db \
 A consumer is a class that processes tasks. Subclass `Consumer` and implement the `name` property and `run()` method:
 
 ```python
-from shqaff import Consumer, register_consumer
+from shqaff.consumer import Consumer
+from shqaff.registry import register_consumer
 
 class EmailConsumer(Consumer):
 
@@ -63,7 +64,8 @@ register_consumer(EmailConsumer)
 ### 3. Create Tasks
 
 ```python
-from shqaff import init_db, create_task, SessionLocal
+from shqaff.db import init_db, SessionLocal
+from shqaff.producer import create_task
 
 # Initialize the database tables
 init_db()
@@ -87,7 +89,7 @@ create_task(
 ### 4. Process Tasks
 
 ```python
-from shqaff import process_tasks
+from shqaff.event_loop import process_tasks
 
 # Poll the database and process pending tasks
 # This runs an infinite loop with a configurable interval
@@ -99,7 +101,7 @@ process_tasks(db=db, poll_interval=2, batch_size=10)
 For cron-style execution, process one batch and exit:
 
 ```python
-from shqaff import process_once
+from shqaff.event_loop import process_once
 
 process_once(db=db, batch_size=10)
 ```
@@ -109,14 +111,11 @@ process_once(db=db, batch_size=10)
 ```python
 from dataclasses import asdict, dataclass
 
-from shqaff import (
-    Consumer,
-    SessionLocal,
-    create_task,
-    init_db,
-    process_tasks,
-    register_consumer,
-)
+from shqaff.consumer import Consumer
+from shqaff.db import init_db, SessionLocal
+from shqaff.event_loop import process_tasks
+from shqaff.producer import create_task
+from shqaff.registry import register_consumer
 
 
 @dataclass

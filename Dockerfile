@@ -12,7 +12,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install pytest
 
 COPY shqaff/ shqaff/
-COPY tests/ tests/
+COPY shqaff/tests/ tests/
 COPY main.py .
 
 CMD ["pytest", "tests/"]

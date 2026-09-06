@@ -39,8 +39,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt
-          pip install pytest
+          pip install -r requirements_dev.txt
 
       - name: Run tests
         env:

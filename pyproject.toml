@@ -41,7 +41,12 @@ dev = [
     "mypy",
     "build",
     "twine",
+    "faker",
+    "hypothesis",
 ]
+
+[project.scripts]
+shqaff = "shqaff.cli:main"
 
 [build-system]
 requires = ["setuptools>=61.0"]

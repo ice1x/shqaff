@@ -1,20 +1,15 @@
 import time
 from datetime import datetime, timezone
 
-from shqaff.models import TaskQueue
 from shqaff.registry import consumer_registry
+from shqaff.repository import TaskRepository
 from shqaff.task import Task
 from shqaff.status import TaskStatus
 
 
 def process_once(db, batch_size: int = 10):
-    tasks = (
-        db.query(TaskQueue)
-        .filter(TaskQueue.status == TaskStatus.PENDING.value)
-        .limit(batch_size)
-        .with_for_update(skip_locked=True)
-        .all()
-    )
+    repo = TaskRepository(db)
+    tasks = repo.claim_pending(batch_size)
 
     for task_model in tasks:
         consumer_cls = consumer_registry.get(task_model.consumer)
@@ -26,7 +21,7 @@ def process_once(db, batch_size: int = 10):
         try:
             task.start()
             task_model.last_attempt_at = datetime.now(timezone.utc)
-            db.commit()
+            repo.commit()
 
             consumer = consumer_cls()
             consumer.run(task_model.payload)
@@ -44,7 +39,7 @@ def process_once(db, batch_size: int = 10):
 
         finally:
             task_model.updated_at = datetime.now(timezone.utc)
-            db.commit()
+            repo.commit()
 
 
 def process_tasks(db, poll_interval: int = 5, batch_size: int = 10):

@@ -6,3 +6,5 @@ pytest
 mypy
 build
 twine
+faker
+hypothesis

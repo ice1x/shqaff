@@ -1,4 +1,4 @@
-# shqaff
+# 🗄️ shqaff
 
 A lightweight, PostgreSQL-backed task queue for Python. Uses SQLAlchemy for storage and a finite state machine for reliable task lifecycle management.
 
@@ -151,6 +151,42 @@ if __name__ == "__main__":
     process_tasks(db=db, poll_interval=2)
 ```
 
+## Repository Layer
+
+`TaskRepository` is a thin, engine-agnostic CRUD layer over the task model. It
+holds no connection of its own — it operates on the `Session` you pass in, so it
+works identically against PostgreSQL in production and SQLite in tests:
+
+```python
+from shqaff import SessionLocal, TaskRepository, TaskStatus
+
+repo = TaskRepository(SessionLocal())
+
+task = repo.create(task_name="welcome_email", consumer="send_email", payload={"to": "a@b.c"})
+repo.get(task.id)
+repo.list(status=TaskStatus.PENDING, limit=20)
+repo.count(status=TaskStatus.PENDING)
+repo.set_status(task.id, TaskStatus.DONE)
+repo.delete(task.id)
+```
+
+## Command-Line Interface
+
+Installing the package exposes a `shqaff` command with full CRUD over the queue:
+
+```bash
+shqaff init-db
+shqaff create --task-name welcome_email --consumer send_email --payload '{"to": "a@b.c"}'
+shqaff list --status pending
+shqaff get 1
+shqaff update 1 --status done
+shqaff delete 1
+```
+
+The database URL is resolved from the `--database-url` option, the
+`SHQAFF_DATABASE_URL` environment variable, or the `SHAQAFF_DB_*` configuration
+variables, in that order.
+
 ## Task Lifecycle
 
 Tasks follow a strict state machine:
@@ -192,8 +228,20 @@ docker compose run test       # Run the test suite
 
 ## Testing
 
+The suite spans unit, integration, fuzz (Hypothesis) and end-to-end layers.
+The repository, CLI and lifecycle tests run against in-memory SQLite and need no
+PostgreSQL; the legacy DB-backed tests (`test_smoke`, `test_event_loop`,
+`test_retry_logic`, `test_fail_after_max_retries`) require a running instance.
+
 ```bash
-# Requires a running PostgreSQL instance
+pip install -e ".[dev]"
+
+# Runs everywhere, no database required:
+pytest tests/test_repository.py tests/test_repository_fuzz.py \
+       tests/test_cli.py tests/test_e2e.py tests/test_package.py \
+       tests/test_task_fsm.py tests/test_invalid_fsm_transition.py
+
+# Full suite (needs a running PostgreSQL instance):
 pytest tests/
 ```
 

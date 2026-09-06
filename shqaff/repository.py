@@ -90,6 +90,30 @@ class TaskRepository:
             query = query.filter(TaskQueue.status == _status_value(status))
         return query.count()
 
+    def claim_pending(
+        self, batch_size: int = 10, *, for_update: bool = True
+    ) -> List[TaskQueue]:
+        """Fetch a batch of pending tasks for processing.
+
+        When ``for_update`` is set (the default) the rows are locked with
+        ``SELECT ... FOR UPDATE SKIP LOCKED`` so concurrent workers never claim
+        the same task. The clause is a no-op on backends that do not support it
+        (e.g. SQLite in tests). No transaction is committed here; the caller
+        owns the unit of work and persists via :meth:`commit`.
+        """
+        query = (
+            self.db.query(TaskQueue)
+            .filter(TaskQueue.status == TaskStatus.PENDING.value)
+            .limit(batch_size)
+        )
+        if for_update:
+            query = query.with_for_update(skip_locked=True)
+        return query.all()
+
+    def commit(self) -> None:
+        """Persist pending changes on the underlying session."""
+        self.db.commit()
+
     # -- update ---------------------------------------------------------
     def update(self, task_id: int, **fields: Any) -> Optional[TaskQueue]:
         unknown = set(fields) - _UPDATABLE_FIELDS

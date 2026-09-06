@@ -98,3 +98,24 @@ def test_delete(repo: TaskRepository, faker):
     assert repo.delete(task.id) is True
     assert repo.get(task.id) is None
     assert repo.delete(task.id) is False
+
+
+def test_claim_pending_returns_only_pending_up_to_batch(repo: TaskRepository, faker):
+    pending = [repo.create(**_make(faker)) for _ in range(4)]
+    done = repo.create(**_make(faker))
+    repo.set_status(done.id, TaskStatus.DONE)
+
+    claimed = repo.claim_pending(batch_size=3)
+
+    assert len(claimed) == 3
+    assert {t.id for t in claimed} <= {t.id for t in pending}
+    assert all(t.status == TaskStatus.PENDING.value for t in claimed)
+
+
+def test_commit_persists_pending_mutations(repo: TaskRepository, faker):
+    task = repo.create(**_make(faker))
+
+    task.error = "boom"
+    repo.commit()
+
+    assert repo.get(task.id).error == "boom"

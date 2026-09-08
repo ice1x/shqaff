@@ -1,5 +1,10 @@
 # 🗄️ shqaff
 
+[![PyPI version](https://img.shields.io/pypi/v/shqaff)](https://pypi.org/project/shqaff/)
+[![Python versions](https://img.shields.io/pypi/pyversions/shqaff)](https://pypi.org/project/shqaff/)
+[![Tests](https://github.com/ice1x/shqaff/actions/workflows/tests.yml/badge.svg)](https://github.com/ice1x/shqaff/actions/workflows/tests.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/ice1x/shqaff/blob/main/LICENSE)
+
 A lightweight, PostgreSQL-backed task queue for Python. Uses SQLAlchemy for storage and a finite state machine for reliable task lifecycle management.
 
 ## Features

@@ -95,6 +95,11 @@ class TaskRepository:
     ) -> List[TaskQueue]:
         """Fetch a batch of pending tasks for processing.
 
+        Tasks are claimed oldest first (``ORDER BY id``), so a queue is FIFO
+        and a producer can rely on the order it enqueued tasks in. Without the
+        ORDER BY, PostgreSQL returns heap order, and a row that was updated
+        (a retry, a status change) moves behind newer rows.
+
         When ``for_update`` is set (the default) the rows are locked with
         ``SELECT ... FOR UPDATE SKIP LOCKED`` so concurrent workers never claim
         the same task. The clause is a no-op on backends that do not support it
@@ -104,6 +109,7 @@ class TaskRepository:
         query = (
             self.db.query(TaskQueue)
             .filter(TaskQueue.status == TaskStatus.PENDING.value)
+            .order_by(TaskQueue.id)
             .limit(batch_size)
         )
         if for_update:
